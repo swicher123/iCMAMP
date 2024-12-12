@@ -8,15 +8,14 @@ Yujie Yao1,#, Daijun Zhang1,#, Henghui Fan1, Junfeng Xia1, Ting Wu2,3,*, Yansen 
 #These authors contributed equally to this work.
 Corresponding authors: wutingf88945@163.com (T. W.), suyansen@ahu.edu.cn (Y. S.), and ynbin@ahu.edu.cn (Y. B.).
 
+
 The repo is organised as follows:
 
 /data: The folder includes structural and sequence information for positive and negative samples and is divided into training and test sets
 
 /feature_data: The folder contains 7 sets of feature information extracted from structures and sequences
 
-count.py：
-
-evaluation.py：
+evaluation.py：evaluation metrics for the model (iCMAMP-2L)
 
 Feature.py： Python code for extracting features from sample structures and sequences
 
@@ -24,18 +23,11 @@ iCMAMP_1L_main.py：Main process code of iCMAMP-1L
 
 iCMAMP_2L_main.py：Main process code of iCMAMP-2L
 
-loss.py：
+loss.py：Loss function of iCMAMP-2L
 
-model.py：
+model.py： monolithic model framework of iCMAMP-2L
 
-multiple_label.py：
+test.py：test the iCMAMP-2L model
 
-test.py：
-
-train.py：
-
-tSNE.py：
-
-UMap.py：
-
+train.py：used for iCMAMP-2L model training
 
