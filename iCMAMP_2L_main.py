@@ -4,108 +4,135 @@
 # @Author  : zdj
 # @FileName: main.py
 # @Software: PyCharm
-import csv
 import os
-import time
-from pathlib import Path
+import tensorflow as tf
 import numpy as np
-# from train import train_main
 import pandas as pd
+from sklearn.model_selection import KFold
+from model import CNN
+from evaluation import evaluate
+from tensorflow.keras.optimizers import Adam
+from loss import focal_loss
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = '3'
-modelDir = 'model'
-Path(modelDir).mkdir(exist_ok=True)
-t = time.localtime(time.time())
+# Set random seed for reproducibility
+def set_random_seed(seed=42):
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
 
-def staticTrainandTest(y_train, y_test):
-    # static number
-    data_size_tr = np.zeros(5)
-    data_size_te = np.zeros(5)
-
-    for i in range(len(y_train)):
-        for j in range(len(y_train[i])):
-            if y_train[i][j] > 0:
-                data_size_tr[j] += 1
-
-    for i in range(len(y_test)):
-        for j in range(len(y_test[i])):
-            if y_test[i][j] > 0:
-                data_size_te[j] += 1
-
-    for i in range(5):
-        print('{}\n'.format(int(data_size_tr[i])))
-
-    print("TestingSet:\n")
-    for i in range(5):
-        print('{}\n'.format(int(data_size_te[i])))
-
-    return data_size_tr
+set_random_seed()
 
 
-def getSequenceData(first_dir, file_name):
-    data_path = "{}/{}".format(first_dir, file_name)
-    with open(data_path, 'r', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        next(reader)  # 跳过第一行（即header）
-        feature = list(reader)
-    return feature
-
-
-def getFeature(first_dir, file_name):
+# Function to read features
+def read_csv_feature(first_dir, file_name, usecols=None):
     path = os.path.join(first_dir, file_name)
-    df = pd.read_csv(path)
-    subset = df.iloc[:, 0:20]
-    return subset
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"The file {path} does not exist.")
+    try:
+        df = pd.read_csv(path)  # 跳过第一行
+        return df.iloc[:, usecols] if usecols else df
+    except Exception as e:
+        raise RuntimeError(f"Error reading the CSV file: {e}")
 
-
-def getLabelData(first_dir, file_name):
-    label_list = []
-    label_path = "{}/{}.txt".format(first_dir, file_name)
+# Function to read labels
+def get_labels(first_dir, file_name):
+    labels = []
+    label_path = os.path.join(first_dir, f"{file_name}.txt")
+    if not os.path.isfile(label_path):
+        raise FileNotFoundError(f"Label file {label_path} does not exist.")
     with open(label_path) as f:
-        for each in f:
-            each = each.strip()
-            label_list.append(np.array(list(each), dtype=int))
-    return label_list
+        for line in f:
+            line = line.strip()
+            labels.append(np.array([int(x) for x in line.split(',')]))
+    return np.array(labels)
+
+# Convert string type features to float
+def convert_str_to_float(*arrays):
+    converted = [arr.astype(float) if np.issubdtype(arr.dtype, np.str_) else arr for arr in arrays]
+    return converted[0] if len(converted) == 1 else converted  # Return the array if only one array is passed
+
+# Read data
+first_dir = 'data'
+threshold = 0.5
+train_feature = read_csv_feature('feature_data', 'DPC_train.csv').values
+
+test_feature = read_csv_feature('feature_data', 'DPC_test.csv').values
+y_test = get_labels(first_dir, 'test_label')
 
 
-def TrainAndTest(tr_data, tr_label, te_data, te_label, data_size):
-    # Call training method
-    train = [tr_data, tr_label]
-    test = [te_data, te_label]
-    threshold = 0.5
-    model_num = 10  # model number
-    test.append(threshold)
+X_train = train_feature
+y_train = get_labels(first_dir, 'train_label')
 
-    # train_main(train, test, model_num, modelDir, data_size)
+# Ensure data types are correct
+X_train, y_train = convert_str_to_float(X_train, y_train)
+X_test = test_feature
+X_test, y_test = convert_str_to_float(X_test, y_test)
 
-    tt = time.localtime(time.time())
-    with open(os.path.join(modelDir, 'time.txt'), 'a+') as f:
-        f.write('finish time: {}m {}d {}h {}m {}s'.format(tt.tm_mon, tt.tm_mday, tt.tm_hour, tt.tm_min, tt.tm_sec))
+# Normalize features
+input_dim = X_train.shape[1]
+num_labels = y_train.shape[1]
 
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+precision_val, coverage_val, accuracy_val, absolute_true_val, absolute_false_val = [], [], [], [], []
 
-def main():
-    first_dir = 'data'
-    feature_dir = 'feature_data'
+for fold, (train_idx, val_idx) in enumerate(kf.split(X_train)):
+    print(f"Training fold {fold + 1}...")
+    X_train_fold, X_val_fold = X_train[train_idx], X_train[val_idx]
+    y_train_fold, y_val_fold = y_train[train_idx], y_train[val_idx]
 
-    # train_sequence_data=getFeature(feature_dir,'Mutilabel_feature_train.csv')
-    train_sequence_data = getSequenceData(feature_dir, 'DPC_train.csv')
-    train_sequence_label = getLabelData(first_dir, 'train_label')
-    # test_sequence_data=getFeature(feature_dir,'Mutilabel_feature_test.csv')
-    test_sequence_data = getSequenceData(feature_dir, 'DPC_test.csv')
-    test_sequence_label = getLabelData(first_dir, 'test_label')
+    # Initialize model
+    model = CNN(input_shape=input_dim, num_labels=num_labels, length=input_dim)
+    optimizer = Adam(learning_rate=0.0001)  # Set learning rate
+    model.compile(optimizer=optimizer, loss=focal_loss(), metrics=['accuracy'])
 
-    # Converting the list collection to an array
-    x_train = np.array(train_sequence_data)
-    x_test = np.array(test_sequence_data)
-    y_train = np.array(train_sequence_label)
-    y_test = np.array(test_sequence_label)
+    # Train model
+    model.fit(X_train_fold, y_train_fold, batch_size=32, epochs=100, validation_data=(X_val_fold, y_val_fold))
 
-    # Counting the number of each peptide in the training set and the test set, and return the total number of the training set
-    data_size = staticTrainandTest(y_train, y_test)
+    # Evaluate model
+    y_val_pred = model.predict(X_val_fold) > threshold
+    precision_train, coverage_train, accuracy_train, absolute_true_train, absolute_false_train = evaluate(
+        y_val_pred.astype(int), y_val_fold)
 
-    # training and predicting the data
-    TrainAndTest(x_train, y_train, x_test, y_test, data_size)
+    # Append results
+    precision_val.append(precision_train)
+    coverage_val.append(coverage_train)
+    accuracy_val.append(accuracy_train)
+    absolute_true_val.append(absolute_true_train)
+    absolute_false_val.append(absolute_false_train)
 
+# Train set results
+train_results = f"""
+===== Train Set Results =====
+Precision: {np.mean(precision_val)}
+Coverage: {np.mean(coverage_val)}
+Accuracy: {np.mean(accuracy_val)}
+Absolute True: {np.mean(absolute_true_val)}
+Absolute False: {np.mean(absolute_false_val)}
+"""
 
-if __name__ == '__main__':
-    main()
+# Model training
+final_model = CNN(input_shape=input_dim, num_labels=num_labels, length=input_dim)
+optimizer = Adam(learning_rate=0.0001)  # Set learning rate
+final_model.compile(optimizer=optimizer, loss=focal_loss(), metrics=['accuracy'])
+final_model.fit(X_train, y_train, batch_size=32, epochs=100, validation_split=0.1)
+y_pred = final_model.predict(X_test) > threshold
+precision_test, coverage_test, accuracy_test, absolute_true_test, absolute_false_test = evaluate(y_pred.astype(int), y_test)
+
+# Test set results
+test_results = f"""
+===== Test Set Results =====
+Precision: {precision_test}
+Coverage: {coverage_test}
+Accuracy: {accuracy_test}
+Absolute True: {absolute_true_test}
+Absolute False: {absolute_false_test}
+"""
+
+print(train_results)
+print(test_results)
+
+# Save evaluation results to file
+with open("result.txt", "a+") as f:
+    f.write(train_results)
+    f.write(test_results)
+
+print("Evaluation results have been saved to result.txt")
