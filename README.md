@@ -23,7 +23,7 @@ The repo is organised as follows:
 | iCMAMP_2L_main.py | Main process code of iCMAMP-2L                               |
 | loss.py           | Loss function of iCMAMP-2L                                   |
 | model.py          | Monolithic model framework of iCMAMP-2L                      |
-| result.txt        | Result of iCMAMP-2L                                          |
+| result.txt        | Result of ICiCMAMP-2L                                          |
 
 ## Installation
 
@@ -39,7 +39,7 @@ The repo is organised as follows:
 
   - `Python` == 3.8
 
-- Download `ETFC`to your computer
+- Download `ICiCMAMP`to your computer
 
   ```bash
   git clone https://github.com/swicher123/iCMAMP.git
