@@ -1,0 +1,14 @@
+
+===== Train Set Results =====
+Precision: 0.48982369001975135
+Coverage: 0.47645099918670847
+Accuracy: 0.465899994190775
+Absolute True: 0.6437608922969676
+Absolute False: 0.11136981526664336
+
+===== Test Set Results =====
+Precision: 0.46929824561403505
+Coverage: 0.4586842105263158
+Accuracy: 0.44026315789473675
+Absolute True: 0.631578947368421
+Absolute False: 0.11789473684210515
