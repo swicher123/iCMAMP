@@ -19,11 +19,10 @@ The repo is organised as follows:
 | evaluation.py     | Evaluation metrics for the model (iCMAMP-2L)                 |
 | Feature.py        | Python code for extracting features from sample structures and sequences |
 | iCMAMP_1L_main.py | Main process code of iCMAMP-1L                               |
-| loss_functions.py | Loss functions used to train models                          |
 | iCMAMP_2L_main.py | Main process code of iCMAMP-2L                               |
 | loss.py           | Loss function of iCMAMP-2L                                   |
 | model.py          | Monolithic model framework of iCMAMP-2L                      |
-| result.txt        | Result of ICiCMAMP-2L                                          |
+| result.txt        | Result of iCMAMP-2L                                          |
 
 ## Installation
 
@@ -39,7 +38,7 @@ The repo is organised as follows:
 
   - `Python` == 3.8
 
-- Download `ICiCMAMP`to your computer
+- Download `iCMAMP`to your computer
 
   ```bash
   git clone https://github.com/swicher123/iCMAMP.git
