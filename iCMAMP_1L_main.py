@@ -31,7 +31,7 @@ scoring = {
     'spe': make_scorer(specificity)
 }
 
-def lightGBM(x,y):
+def lightGBM(x,y,dim):
 
     # 训练LightGBM模型并获取特征重要性
     model = lgb.LGBMClassifier()
@@ -41,7 +41,7 @@ def lightGBM(x,y):
     # 根据特征重要性对特征进行排序
     features = sorted(range(len(feature_importance)), key=lambda k: feature_importance[k], reverse=True)
 
-    return features[:50]
+    return features[:dim]
 
 
 
@@ -113,9 +113,12 @@ def read_feature(dataset,i):
 
         if i in [2, 3, 5]:
 
+            # 动态设置 dim 值
+            dim = 60 if i == 5 else 50
+
             # 特征选择
-            bestsubset_lightGBM = lightGBM(X, y)
-            X_lightGBM = X.iloc[:, bestsubset_lightGBM]
+            bestsubset_lightGBM = lightGBM(X, y, dim)
+            X = X.iloc[:, bestsubset_lightGBM]
 
         return X,y
 
