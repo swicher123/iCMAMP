@@ -55,6 +55,7 @@ The repo is organised as follows:
 
 ```shell
 cd iCMAMP
+python iCMAMP_1L_main.py
 python iCMAMP_2L_main.py
 ```
 
