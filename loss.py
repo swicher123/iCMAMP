@@ -8,8 +8,8 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 
 # Focal Loss
-def focal_loss(gamma=2., alpha=0.25):
-    def focal_loss_fixed(y_true, y_pred):
+def focal_loss(gamma=2., alpha=0.2):
+    def focal_loss(y_true, y_pred):
         # Ensure that y_true is of float32 type
         y_true = K.cast(y_true, dtype=tf.float32)
         y_pred = K.clip(y_pred, K.epsilon(), 1.0 - K.epsilon())  # Avoid log(0) calculation issue
@@ -24,4 +24,4 @@ def focal_loss(gamma=2., alpha=0.25):
         loss = weight * cross_entropy
         return K.mean(K.sum(loss, axis=1))  # Sum over samples and take the mean
 
-    return focal_loss_fixed
+    return focal_loss
