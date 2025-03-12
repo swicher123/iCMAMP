@@ -16,13 +16,12 @@ def CNN(input_shape, num_labels):
 
     x = main_input[..., None]
 
-    # 1D 卷积可以保留，但要调整参数
     x = Conv1D(64, kernel_size=2, activation='relu', padding='same')(x)
     x = MaxPooling1D(pool_size=2, strides=1, padding='same')(x)
 
     x = Flatten()(x)
     x = Dense(128, activation='relu')(x)
-    x = Dropout(0.4)(x)  # Dropout 位置调整
+    x = Dropout(0.4)(x)  
     output = Dense(num_labels, activation='sigmoid', name='output')(x)
 
     model = Model(inputs=main_input, outputs=output)
