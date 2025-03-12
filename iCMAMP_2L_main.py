@@ -28,7 +28,7 @@ def read_csv_feature(first_dir, file_name, usecols=None):
     if not os.path.isfile(path):
         raise FileNotFoundError(f"The file {path} does not exist.")
     try:
-        df = pd.read_csv(path)  # 跳过第一行
+        df = pd.read_csv(path) 
         return df.iloc[:, usecols] if usecols else df
     except Exception as e:
         raise RuntimeError(f"Error reading the CSV file: {e}")
@@ -80,8 +80,8 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(X_train)):
     y_train_fold, y_val_fold = y_train[train_idx], y_train[val_idx]
 
     # Initialize model
-    model = CNN(input_shape=input_dim, num_labels=num_labels, length=input_dim)
-    optimizer = Adam(learning_rate=0.0001)  # Set learning rate
+    model = CNN(input_shape=input_dim, num_labels=num_labels)
+    optimizer = Adam(learning_rate=0.001)  # Set learning rate
     model.compile(optimizer=optimizer, loss=focal_loss(), metrics=['accuracy'])
 
     # Train model
@@ -110,10 +110,10 @@ Absolute False: {np.mean(absolute_false_val)}
 """
 
 # Model training
-final_model = CNN(input_shape=input_dim, num_labels=num_labels, length=input_dim)
-optimizer = Adam(learning_rate=0.0001)  # Set learning rate
+final_model = CNN(input_shape=input_dim, num_labels=num_labels)
+optimizer = Adam(learning_rate=0.001)  # Set learning rate
 final_model.compile(optimizer=optimizer, loss=focal_loss(), metrics=['accuracy'])
-final_model.fit(X_train, y_train, batch_size=32, epochs=100, validation_split=0.1)
+final_model.fit(X_train, y_train, batch_size=32, epochs=100, validation_data=(X_test, y_test))
 y_pred = final_model.predict(X_test) > threshold
 precision_test, coverage_test, accuracy_test, absolute_true_test, absolute_false_test = evaluate(y_pred.astype(int), y_test)
 
