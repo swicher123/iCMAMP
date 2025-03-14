@@ -64,10 +64,9 @@ def process_pdb_and_compute_dpc(input_folder, output_csv):
                 writer.writerow([pdb_file] + dpc_features)
             except Exception as e:
                 print(f"Error processing {pdb_file}: {e}")
-    # print(f"DPC 特征已保存至: {output_csv}")
     print(f"DPC traits saved to: {output_csv}")
 
 if __name__ == "__main__":
-    input_folder = "pdb_test"
-    output_csv = "sequence_test/DPC_feature_1.csv"
+    input_folder = "pdb_folder" # pdb folder: stores multiple pdb files
+    output_csv = "feature_folder/DPC_feature.csv" # dpc feature save path
     process_pdb_and_compute_dpc(input_folder, output_csv)
