@@ -54,14 +54,11 @@ def convert_str_to_float(*arrays):
 first_dir = 'data'
 threshold = 0.5
 train_feature = read_csv_feature('feature_data', 'DPC_train.csv').values
-
 test_feature = read_csv_feature('feature_data', 'DPC_test.csv').values
 y_test = get_labels(first_dir, 'test_label')
-
-
-X_train = train_feature
 y_train = get_labels(first_dir, 'train_label')
 
+X_train = train_feature
 # Ensure data types are correct
 X_train, y_train = convert_str_to_float(X_train, y_train)
 X_test = test_feature
