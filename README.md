@@ -42,6 +42,19 @@ The repo is organised as follows:
   cd iCMAMP
   pip install -r requirement.txt
   ```
+## Predicting structure and ESM1-b exacting
+
+If you have a peptide sequence containing chemically modified residues, please use the PEPstrMOD tool to predict its three-dimensional structure and extract features using the ESM1-b model.
+
+PEPstrMOD:
+```
+https://webs.iiitd.edu.in/raghava/pepstrmod/
+```
+
+ESM1-b:
+```
+https://github.com/facebookresearch/esm
+```
 
 ## Training and test iCMAMP_1L model
 
